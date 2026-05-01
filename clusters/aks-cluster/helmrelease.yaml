@@ -31,9 +31,9 @@ spec:
       retries: 3
   values:
     laceworkConfig:
-      serverUrl: "<SERVER_URL>"
-      kubernetesCluster: "<CLUSTER_NAME>"
-      env: "<ENV_NAME>"
+      serverUrl: "https://api.fra.lacework.net"
+      kubernetesCluster: "aks-cluster"
+      env: "azure-prod"
   valuesFrom:
     - kind: Secret
       name: lacework-agent-token
