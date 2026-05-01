@@ -5,3 +5,21 @@ metadata:
   labels:
     app.kubernetes.io/managed-by: flux
     app.kubernetes.io/part-of: forticnapp
+---
+# ServiceAccount used by the token-mounter pod to authenticate to Azure
+# via Workload Identity. The annotation `azure.workload.identity/client-id`
+# binds this SA to the user-assigned managed identity (created OUTSIDE
+# Terraform as part of the one-time platform setup, alongside the Key Vault).
+# Per-cluster, Terraform creates a federated identity credential that
+# authorizes that cluster's OIDC issuer to mint tokens for this SA.
+#
+# The client_id below is STABLE — same across every cluster, every rebuild.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: lacework-csi-sa
+  namespace: lacework-agent
+  annotations:
+    azure.workload.identity/client-id: "9bcecf56-bb5e-4ef5-b43d-f3a41f26bd81"
+  labels:
+    azure.workload.identity/use: "true"
