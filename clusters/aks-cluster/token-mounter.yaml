@@ -2,6 +2,12 @@
 # The Secrets Store CSI Driver only creates the synced Kubernetes Secret
 # (`lacework-agent-token`) once at least one pod actually mounts the volume,
 # so this pod must exist BEFORE the HelmRelease tries to reference the Secret.
+#
+# Workload Identity bindings:
+#   - serviceAccountName: lacework-csi-sa  (defined in namespace.yaml)
+#   - label azure.workload.identity/use: "true"  triggers the AKS workload
+#     identity webhook to inject the projected SA token volume + env vars
+#     that the CSI driver reads to authenticate to Azure AD.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,7 +25,9 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: lacework-token-mounter
+        azure.workload.identity/use: "true"
     spec:
+      serviceAccountName: lacework-csi-sa
       containers:
         - name: pause
           image: mcr.microsoft.com/oss/kubernetes/pause:3.6
