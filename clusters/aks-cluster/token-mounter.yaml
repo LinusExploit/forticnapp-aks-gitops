@@ -1,0 +1,36 @@
+# A tiny Deployment whose only job is to mount the SecretProviderClass volume.
+# The Secrets Store CSI Driver only creates the synced Kubernetes Secret
+# (`lacework-agent-token`) once at least one pod actually mounts the volume,
+# so this pod must exist BEFORE the HelmRelease tries to reference the Secret.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lacework-token-mounter
+  namespace: lacework-agent
+  labels:
+    app.kubernetes.io/name: lacework-token-mounter
+    app.kubernetes.io/part-of: forticnapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: lacework-token-mounter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: lacework-token-mounter
+    spec:
+      containers:
+        - name: pause
+          image: mcr.microsoft.com/oss/kubernetes/pause:3.6
+          volumeMounts:
+            - name: lacework-kv
+              mountPath: /mnt/lacework-kv
+              readOnly: true
+      volumes:
+        - name: lacework-kv
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: lacework-agent-kv

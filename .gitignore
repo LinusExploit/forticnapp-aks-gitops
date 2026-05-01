@@ -1,0 +1,11 @@
+# Never commit secrets or env files into this repo.
+# The FortiCNAPP access token lives in Azure Key Vault; nothing token-related
+# should ever land here.
+.env
+.env.*
+*.secret
+*.local.yaml
+*.tfvars
+*.tfstate
+*.tfstate.*
+.terraform/

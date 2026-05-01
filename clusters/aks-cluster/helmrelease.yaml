@@ -1,0 +1,41 @@
+# FortiCNAPP / Lacework agent Helm release.
+# - Chart pulled from the `lacework` HelmRepository.
+# - Access token sourced from the Kubernetes Secret `lacework-agent-token`,
+#   which is synced from Azure Key Vault by the Secrets Store CSI Driver.
+#
+# Replace placeholders below:
+#   <SERVER_URL>   -> e.g. https://api.fortinet.lacework.net
+#   <CLUSTER_NAME> -> e.g. aks-cluster
+#   <ENV_NAME>     -> e.g. dev / staging / prod
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: lacework-agent
+  namespace: lacework-agent
+spec:
+  interval: 10m
+  releaseName: lacework-agent
+  chart:
+    spec:
+      chart: lacework-agent
+      sourceRef:
+        kind: HelmRepository
+        name: lacework
+        namespace: lacework-agent
+      interval: 1h
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    laceworkConfig:
+      serverUrl: "<SERVER_URL>"
+      kubernetesCluster: "<CLUSTER_NAME>"
+      env: "<ENV_NAME>"
+  valuesFrom:
+    - kind: Secret
+      name: lacework-agent-token
+      valuesKey: accessToken
+      targetPath: laceworkConfig.accessToken
